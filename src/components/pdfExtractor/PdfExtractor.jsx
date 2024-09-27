@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
+import './PdfExtractor.css';
 import { Document, pdfjs } from 'react-pdf';
 import register from '../../functions/register';
+import Swal from 'sweetalert2';
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
-const PdfExtractor = ({ pdfFile }) => {
+const PdfExtractor = ({ pdfFile, onReset }) => {
     const [name, setName] = useState('');
     const [bviCompanyNumber, setBviCompanyNumber] = useState('');
     const [jurisdiction, setJurisdiction] = useState('');
@@ -61,37 +63,58 @@ const PdfExtractor = ({ pdfFile }) => {
         });
     }
 
-    async function submitHandler(e){
+    function submitHandler(e) {
         e.preventDefault();
         const name = e.target.name.value;
         const bviCompanyNumber = e.target.bviCompanyNumber.value;
         const jurisdiction = e.target.jurisdiction.value;
         const date = e.target.date.value;
-        console.log("Registrado: ", name, bviCompanyNumber, jurisdiction, date);
 
-        const data = {name, bviCompanyNumber, jurisdiction, date};
-        await register(data);
+        const data = { name, bviCompanyNumber, jurisdiction, date };
+        Swal.fire({
+            title: "Are you sure?",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#17a2b8",
+            cancelButtonColor: "#6c757d",
+            confirmButtonText: "Yes!"
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                await register(data);
+                onReset();
+                Swal.fire({
+                    title: "Great",
+                    text: "Your information has been successfully registered.",
+                    icon: "success",
+                    confirmButtonColor: "#17a2b8",
+                });
+            }
+        });
     }
 
     return (
         <div>
             <Document file={pdfFile} onLoadSuccess={onDocumentLoadSuccess}></Document>
             <div>
-                <h2>Formulario con datos extraídos del PDF:</h2>
-                <form onSubmit={submitHandler}>
-                    <label htmlFor="name">Name:</label>
-                    <input type="text" id="name" value={name} readOnly />
-
-                    <label htmlFor="bviCompanyNumber">BVI Company Number:</label>
-                    <input type="text" id="bviCompanyNumber" value={bviCompanyNumber} readOnly />
-
-                    <label htmlFor="jurisdiction">Jurisdiction:</label>
-                    <input type="text" id="jurisdiction" value={jurisdiction} readOnly />
-
-                    <label htmlFor="date">Date:</label>
-                    <input type="text" id="date" value={date} readOnly />
-
-                    <button type="submit">Add</button>
+                <h2>Information from PDF:</h2>
+                <form onSubmit={submitHandler} className='form'>
+                    <div className='info'>
+                        <label htmlFor="name">Name:</label>
+                        <input type="text" id="name" value={name} readOnly />
+                    </div>
+                    <div className='info'> 
+                        <label htmlFor="bviCompanyNumber">Company Registration Number:</label>
+                        <input type="text" id="bviCompanyNumber" value={bviCompanyNumber} readOnly /></div>
+                    <div className='info'>
+                        <label htmlFor="jurisdiction">Jurisdiction:</label>
+                        <input type="text" id="jurisdiction" value={jurisdiction} readOnly />
+                    </div>
+                    <div className='info'>
+                        <label htmlFor="date">Date:</label>
+                        <input type="text" id="date" value={date} readOnly />
+                    </div>
+                    <button type="submit" className='register'>Register</button>
+                    <button onClick={onReset} className='back'>Go back</button>
                 </form>
             </div>
         </div>

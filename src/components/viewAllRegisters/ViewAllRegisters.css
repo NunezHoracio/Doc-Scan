@@ -1,0 +1,58 @@
+.table-container{
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+table{
+    margin-top: 2em;
+    height: auto;
+    width: 90%;
+    background-color: #343a40;
+    border: 5px solid #6c757d;
+    border-collapse: separate;
+    border-spacing: 0 10px;
+    border-radius: 20px;
+  }
+
+  .input-container{
+    display: flex;
+    justify-content: space-around;
+    width: 90%;
+  }
+
+  .filter{
+    display: flex;
+    flex-direction: column;
+    margin: 15px;
+    font-size: 1.2rem;
+    font-weight: 600;
+  }
+
+  .filter input{
+    height: 25px;
+    width: 300px;
+    font-size: 1.1rem;
+    padding: 0 8px;
+    background-color: #343a40;
+    border: 5px solid #6c757d;
+    border-radius: 20px;
+  }
+  
+  table .table-items{
+    font-size: 1.5em;
+  }
+  
+  thead th {
+    padding-bottom: 20px;
+    border-bottom: 5px solid #6c757d; 
+  }
+  
+  tbody tr th{
+    border-bottom: 5px solid #6c757d;
+  }
+  
+  tbody tr:last-child th{
+    border-bottom: none;
+  }
