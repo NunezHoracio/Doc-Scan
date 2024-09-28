@@ -1,11 +1,15 @@
-import React, { useState } from 'react';
-import { MdDelete, MdEdit } from 'react-icons/md';
-import updateRegister from '../../functions/updateRegister';
-import Swal from 'sweetalert2';
-import './RegisterInfo.css';
+import React, { useState } from 'react'; // Importa React y useState desde la librería React
+import { MdDelete, MdEdit } from 'react-icons/md'; // Importa iconos de eliminar y editar
+import updateRegister from '../../functions/updateRegister'; // Importa la función para actualizar registros
+import Swal from 'sweetalert2'; // Importa SweetAlert2 para mostrar alertas
+import './RegisterInfo.css'; // Importa el archivo CSS para estilos
 
+// Componente RegisterInfo que recibe propiedades register, onDelete y refreshTable
 const RegisterInfo = ({ register, onDelete, refreshTable }) => {
+  // Estado para controlar si está en modo edición
   const [isEditing, setIsEditing] = useState(false);
+  
+  // Estado para almacenar los datos del formulario
   const [formData, setFormData] = useState({
     name: register.name,
     bviCompanyNumber: register.bviCompanyNumber,
@@ -13,10 +17,12 @@ const RegisterInfo = ({ register, onDelete, refreshTable }) => {
     date: register.date,
   });
 
+  // Maneja la acción de editar, cambiando el estado a modo edición
   const handleEdit = () => {
     setIsEditing(true);
   };
 
+  // Cancela la edición y restablece los datos al registro original
   const handleCancel = () => {
     setIsEditing(false);
     setFormData({
@@ -25,28 +31,30 @@ const RegisterInfo = ({ register, onDelete, refreshTable }) => {
       jurisdiction: register.jurisdiction,
       date: register.date,
     });
-  }
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
   };
 
+  // Maneja los cambios en los campos de entrada
+  const handleInputChange = (e) => {
+    const { name, value } = e.target; // Obtiene el nombre y valor del campo
+    setFormData({ ...formData, [name]: value }); // Actualiza el estado de formData
+  };
+
+  // Guarda los cambios al registro
   const handleSave = async () => {
     try {
-      await updateRegister(register.id, formData);
-      setIsEditing(false);
-      refreshTable();
-      Swal.fire('Updated!', 'The record has been successfully updated.', 'success');
+      await updateRegister(register.id, formData); // Llama a la función para actualizar el registro
+      setIsEditing(false); // Cambia el estado a no editar
+      refreshTable(); // Refresca la tabla para mostrar los datos actualizados
+      Swal.fire('Updated!', 'The record has been successfully updated.', 'success'); // Muestra una alerta de éxito
     } catch (error) {
-      Swal.fire('Error!', 'There was a problem updating the record.', 'error');
+      Swal.fire('Error!', 'There was a problem updating the record.', 'error'); // Muestra una alerta de error
     }
   };
 
   return (
-    <tr className='row-info'>
+    <tr className='row-info'> {/* Fila de la tabla con clase CSS 'row-info' */}
       <th>
-        {isEditing ? (
+        {isEditing ? ( // Si está en modo edición, muestra un campo de entrada
           <input
             type="text"
             name="name"
@@ -55,7 +63,7 @@ const RegisterInfo = ({ register, onDelete, refreshTable }) => {
             onChange={handleInputChange}
           />
         ) : (
-          register.name
+          register.name // Si no está editando, muestra el nombre del registro
         )}
       </th>
       <th>
@@ -68,7 +76,7 @@ const RegisterInfo = ({ register, onDelete, refreshTable }) => {
             onChange={handleInputChange}
           />
         ) : (
-          register.bviCompanyNumber
+          register.bviCompanyNumber // Muestra el número de la empresa si no está editando
         )}
       </th>
       <th>
@@ -81,7 +89,7 @@ const RegisterInfo = ({ register, onDelete, refreshTable }) => {
             onChange={handleInputChange}
           />
         ) : (
-          register.jurisdiction
+          register.jurisdiction // Muestra la jurisdicción si no está editando
         )}
       </th>
       <th>
@@ -94,18 +102,17 @@ const RegisterInfo = ({ register, onDelete, refreshTable }) => {
             onChange={handleInputChange}
           />
         ) : (
-          register.date
+          register.date // Muestra la fecha si no está editando
         )}
       </th>
       <th>
-        {isEditing ? (
+        {isEditing ? ( // Si está editando, muestra los botones de guardar y cancelar
           <>
             <button className='save-btn success' onClick={handleSave}>Guardar</button>
             <button className='cancel-btn danger' onClick={handleCancel}>Cancelar</button>
           </>
-
         ) : (
-          <>
+          <> {/* Si no está editando, muestra los botones de editar y eliminar */}
             <button className='edit-btn success' onClick={handleEdit}><MdEdit /></button>
             <button className='delete-btn danger' onClick={() => onDelete(register.id)}><MdDelete /></button>
           </>
@@ -115,4 +122,4 @@ const RegisterInfo = ({ register, onDelete, refreshTable }) => {
   );
 };
 
-export default RegisterInfo;
+export default RegisterInfo; // Exporta el componente para ser utilizado en otros archivos

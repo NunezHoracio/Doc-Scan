@@ -1,22 +1,25 @@
-import React, { useEffect, useState } from 'react';
-import RegisterInfo from '../registerInfo/RegisterInfo';
-import getRegisters from '../../functions/getRegisters';
-import deleteRegister from '../../functions/deleteRegister';
-import Swal from 'sweetalert2';
-import * as XLSX from 'xlsx'; // Importar la librería XLSX
-import './ViewAllRegisters.css';
+import React, { useEffect, useState } from 'react'; // Importar React y hooks
+import RegisterInfo from '../registerInfo/RegisterInfo'; // Importar el componente que muestra información de un registro
+import getRegisters from '../../functions/getRegisters'; // Importar función para obtener registros de Firebase
+import deleteRegister from '../../functions/deleteRegister'; // Importar función para eliminar un registro de Firebase
+import Swal from 'sweetalert2'; // Importar SweetAlert2 para alertas
+import * as XLSX from 'xlsx'; // Importar la librería XLSX para exportar a Excel
+import './ViewAllRegisters.css'; // Importar estilos CSS para el componente
 
 const ViewAllRegisters = ({ onReset, registers }) => {
-  const [filterName, setFilterName] = useState('');
-  const [filterBviCompanyNumber, setFilterBviCompanyNumber] = useState('');
-  const [filterJurisdiction, setFilterJurisdiction] = useState('');
-  const [filterDate, setFilterDate] = useState('');
-  const [allRegisters, setAllRegisters] = useState(registers || []); // Almacena los registros
+  // Definición del componente ViewAllRegisters
+  const [filterName, setFilterName] = useState(''); // Estado para almacenar el filtro por nombre
+  const [filterBviCompanyNumber, setFilterBviCompanyNumber] = useState(''); // Estado para almacenar el filtro por número de registro
+  const [filterJurisdiction, setFilterJurisdiction] = useState(''); // Estado para almacenar el filtro por jurisdicción
+  const [filterDate, setFilterDate] = useState(''); // Estado para almacenar el filtro por fecha
+  const [allRegisters, setAllRegisters] = useState(registers || []); // Almacena todos los registros o un array vacío si no hay registros
 
+  // Función para manejar el cambio en los filtros
   const handleFilterChange = (e, setFilter) => {
-    setFilter(e.target.value);
+    setFilter(e.target.value); // Actualiza el estado del filtro con el valor ingresado
   };
 
+  // Filtrar los registros según los filtros aplicados
   const filteredRegisters = allRegisters.filter(register =>
     register.name.toLowerCase().includes(filterName.toLowerCase()) &&
     register.bviCompanyNumber.toLowerCase().includes(filterBviCompanyNumber.toLowerCase()) &&
@@ -24,22 +27,24 @@ const ViewAllRegisters = ({ onReset, registers }) => {
     register.date.toLowerCase().includes(filterDate.toLowerCase())
   );
 
+  // Función para refrescar la tabla de registros
   const refreshTable = () => {
-    getRegisters()
+    getRegisters() // Obtener registros desde Firebase
       .then(registers => {
-        setAllRegisters(registers); // Asegúrate de que `registers` incluye el `id`
+        setAllRegisters(registers); // Actualizar el estado con los registros obtenidos
       })
       .catch(err => {
-        console.log('Error al refrescar la tabla:', err);
+        console.log('Error al refrescar la tabla:', err); // Manejo de errores
       });
   };
 
   useEffect(() => {
-    refreshTable();
+    refreshTable(); // Llama a la función para refrescar la tabla al montar el componente
   }, []);
 
+  // Función para manejar la eliminación de un registro
   const handleDelete = async (id) => {
-    if (!id) return;
+    if (!id) return; // Si no hay id, salir de la función
 
     // Mostrar cuadro de confirmación de SweetAlert2
     Swal.fire({
@@ -53,46 +58,45 @@ const ViewAllRegisters = ({ onReset, registers }) => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await deleteRegister(id); // Elimina usando el `id` del documento
-          refreshTable(); // Actualiza la tabla después de eliminar
+          await deleteRegister(id); // Eliminar usando el `id` del registro
+          refreshTable(); // Actualizar la tabla después de eliminar
           Swal.fire(
             'Deleted!',
             'The record has been deleted.',
-            'error'
+            'error' // Mensaje de éxito
           );
         } catch (error) {
-          console.log('Error al eliminar el registro:', error);
+          console.log('Error al eliminar el registro:', error); // Manejo de errores
           Swal.fire(
             'Error!',
             'There was an error deleting the record.',
-            'error'
+            'error' // Mensaje de error
           );
         }
       }
     });
   };
 
-  // Función para exportar a Excel con encabezados personalizados
-const exportToExcel = () => {
-  // Especifica los encabezados personalizados
-  const headers = [["Name", "Company Registration Number", "Jurisdiction", "Date"]];
+  // Función para exportar los registros filtrados a un archivo de Excel
+  const exportToExcel = () => {
+    const headers = [["Name", "Company Registration Number", "Jurisdiction", "Date"]]; // Encabezados personalizados para el Excel
 
-  // Convierte los registros filtrados en un array de arrays para exportar
-  const dataToExport = filteredRegisters.map(register => [
-    register.name,
-    register.bviCompanyNumber,
-    register.jurisdiction,
-    register.date
-  ]);
+    // Convierte los registros filtrados a un array de arrays para la exportación
+    const dataToExport = filteredRegisters.map(register => [
+      register.name,
+      register.bviCompanyNumber,
+      register.jurisdiction,
+      register.date
+    ]);
 
-  // Convierte los datos a una hoja de Excel
-  const worksheet = XLSX.utils.aoa_to_sheet(headers); // Comienza con los encabezados
-  XLSX.utils.sheet_add_aoa(worksheet, dataToExport, { origin: "A2" }); // Agrega los datos empezando en la fila 2
+    // Crea una hoja de Excel
+    const worksheet = XLSX.utils.aoa_to_sheet(headers); // Comienza con los encabezados
+    XLSX.utils.sheet_add_aoa(worksheet, dataToExport, { origin: "A2" }); // Agrega los datos empezando en la fila 2
 
-  const workbook = XLSX.utils.book_new(); // Crea un nuevo libro de Excel
-  XLSX.utils.book_append_sheet(workbook, worksheet, "Registers"); // Agrega la hoja al libro
-  XLSX.writeFile(workbook, "Registers.xlsx"); // Descarga el archivo como 'registers.xlsx'
-};
+    const workbook = XLSX.utils.book_new(); // Crea un nuevo libro de Excel
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Registers"); // Agrega la hoja al libro
+    XLSX.writeFile(workbook, "Registers.xlsx"); // Descarga el archivo como 'Registers.xlsx'
+  };
 
   return (
     <div className='table-container'>
@@ -102,7 +106,7 @@ const exportToExcel = () => {
           <input
             type='text'
             value={filterName}
-            onChange={(e) => handleFilterChange(e, setFilterName)}
+            onChange={(e) => handleFilterChange(e, setFilterName)} // Llama a handleFilterChange para actualizar el filtro
             className='input-form'
           />
         </label>
@@ -111,7 +115,7 @@ const exportToExcel = () => {
           <input
             type='text'
             value={filterBviCompanyNumber}
-            onChange={(e) => handleFilterChange(e, setFilterBviCompanyNumber)}
+            onChange={(e) => handleFilterChange(e, setFilterBviCompanyNumber)} // Llama a handleFilterChange para actualizar el filtro
             className='input-form'
           />
         </label>
@@ -120,7 +124,7 @@ const exportToExcel = () => {
           <input
             type='text'
             value={filterJurisdiction}
-            onChange={(e) => handleFilterChange(e, setFilterJurisdiction)}
+            onChange={(e) => handleFilterChange(e, setFilterJurisdiction)} // Llama a handleFilterChange para actualizar el filtro
             className='input-form'
           />
         </label>
@@ -129,7 +133,7 @@ const exportToExcel = () => {
           <input
             type='text'
             value={filterDate}
-            onChange={(e) => handleFilterChange(e, setFilterDate)}
+            onChange={(e) => handleFilterChange(e, setFilterDate)} // Llama a handleFilterChange para actualizar el filtro
             className='input-form'
           />
         </label>
@@ -147,10 +151,10 @@ const exportToExcel = () => {
         <tbody>
           {filteredRegisters.map(register => (
             <RegisterInfo
-              key={register.id} // El `id` del documento es usado como `key`
+              key={register.id} // Utiliza el `id` del registro como clave única
               register={register}
-              onDelete={handleDelete} // Pasamos handleDelete como prop
-              refreshTable={refreshTable}
+              onDelete={handleDelete} // Pasa la función handleDelete como prop
+              refreshTable={refreshTable} // Pasa la función refreshTable como prop
             />
           ))}
         </tbody>
@@ -164,4 +168,4 @@ const exportToExcel = () => {
   );
 };
 
-export default ViewAllRegisters;
+export default ViewAllRegisters; // Exportar el componente para ser utilizado en otros lugares
